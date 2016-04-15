@@ -79,8 +79,8 @@ function buildCartItems(items) {
     total += item.subtotal;
   });
   cartItems = {cartitem: items, total: total};
+  
   return cartItems;
-
 }
 
 function buildReceipt(cartItems) {
@@ -98,7 +98,7 @@ function build(cartItems) {
     text += ('名称：' + citem.item.name + '，' + '数量：' + citem.item.count + citem.item.unit + '，' + '单价：' + (citem.item.price).toFixed(2)
     + '(元)' + '，' + '小计：' + (citem.subtotal).toFixed(2) + '(元)\n');
   });
-  
+
   return text;
 }
 
