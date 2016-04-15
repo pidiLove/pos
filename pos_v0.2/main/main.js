@@ -79,7 +79,7 @@ function buildCartItems(items) {
     total += item.subtotal;
   });
   cartItems = {cartitem: items, total: total};
-  
+
   return cartItems;
 }
 
