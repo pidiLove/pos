@@ -1,4 +1,3 @@
-
 function printReceipt(inputs) {
   var outputs = count(inputs);
   var items = buildItems(outputs);
@@ -7,6 +6,7 @@ function printReceipt(inputs) {
 
   console.log(receipt);
 }
+
 function count(inputs) {
   var outputs = [];
   var count = [0,0,0];
@@ -35,12 +35,11 @@ function count(inputs) {
       outputs.push({barcode: input.barcode, name: input.name, unit: input.unit, price: input.price, count: count[2]});
       flag3 = 1;
     }
-
-
   });
 
   return outputs;
 }
+
 function buildItems(outputs) {
   var items = [];
 
@@ -52,6 +51,7 @@ function buildItems(outputs) {
 
   return items;
 }
+
 function buildCartItems(items) {
   var cartItems = [];
   var total = 0;
@@ -63,6 +63,7 @@ function buildCartItems(items) {
 
   return cartItems;
 }
+
 function buildReceipt(cartItems) {
   return ('***<没钱赚商店>收据***\n' + build(cartItems) + '----------------------\n' +
   '总计：' + ((cartItems.total).toFixed(2)) + '(元)\n' + '**********************');
