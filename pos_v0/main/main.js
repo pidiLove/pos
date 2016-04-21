@@ -1,48 +1,48 @@
 function printReceipt(inputs) {
-  var items = buildItems(inputs);
-  var cartItems = buildCartItems(items);
-  var receipt = buildReceipt(cartItems);
+  var cartItems  = buildCartItems(inputs);
+  var  items= buildItems( cartItems );
+  var receipt = buildReceipt(items);
 
   console.log(receipt);
 }
 
-function buildItems(inputs) {
-  var items = [];
+function buildCartItems(inputs) {
+  var cartItems = [];
 
   inputs.forEach(function (input) {
     var subtotal = (input.count * input.price);
 
-    items.push({item: input, subtotal: subtotal});
+    cartItems.push({cartItems: input, subtotal: subtotal});
   });
-
-  return items;
-}
-
-function buildCartItems(items) {
-  var cartItems = [];
-  var total = 0;
-
-  items.forEach(function (item) {
-    total += item.subtotal;
-  });
-
-  cartItems = {cartitem: items, total: total};
 
   return cartItems;
 }
 
-function buildReceipt(cartItems) {
-  return ('***<没钱赚商店>收据***\n' + build(cartItems) + '----------------------\n' +
-  '总计：' + ((cartItems.total).toFixed(2)) + '(元)\n' + '**********************');
+function buildItems(cartItems) {
+  var Items = [];
+  var total = 0;
+
+  cartItems.forEach(function (cartItem) {
+    total += cartItem.subtotal;
+  });
+
+  Items = {items: cartItems, total: total};
+
+  return Items;
+}
+
+function buildReceipt(Items) {
+  return ('***<没钱赚商店>收据***\n' + build(Items) + '----------------------\n' +
+  '总计：' + ((Items.total).toFixed(2)) + '(元)\n' + '**********************');
 }
 
 
-function build(cartItems) {
+function build(Items) {
   var text = '';
-  var citems = cartItems.cartitem;
 
-  citems.forEach(function (citem) {
-    text += ('名称：' + citem.item.name + '，' + '数量：' + citem.item.count + citem.item.unit + '，' + '单价：' + (citem.item.price).toFixed(2)
+
+  (Items.items).forEach(function (citem) {
+    text += ('名称：' + citem.cartItems.name + '，' + '数量：' + citem.cartItems.count + citem.cartItems.unit + '，' + '单价：' + (citem.cartItems.price).toFixed(2)
     + '(元)' + '，' + '小计：' + (citem.subtotal).toFixed(2) + '(元)\n');
   });
 
