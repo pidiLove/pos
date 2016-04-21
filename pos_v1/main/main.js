@@ -1,122 +1,99 @@
 function printReceipt(inputs) {
-  var outputs = count(inputs);
-  var items = buildItems(outputs);
-  var cartItems = buildCartItems(items);
-  var receipt = buildReceipt(cartItems);
+  var cartItems = buildCartItems(inputs);
+  var items = buildItems(cartItems);
+  var receipt = buildReceipt(items);
 
   console.log(receipt);
 }
-function count(inputs) {
-  var outputs = [];
-  var allItems = [];
-  allItems = loadAllItems();
-  var count = [0, 0, 0];
 
-  inputs.forEach(function (input) {
-    if (input == 'ITEM000001')
-      count[0]++;
-    else if (input == 'ITEM000003-2') {
-      var s = input.split('-');
-      count[1] = s[1];
-
-    }
-    else count[2]++;
-  });
-  var flag1 = 0;
-  var flag2 = 0;
-  var flag3 = 0;
-  allItems.forEach(function (allitem) {
-    if (flag1 == 0 && allitem.barcode == 'ITEM000001') {
-      outputs.push({
-        barcode: allitem.barcode,
-        name: allitem.name,
-        unit: allitem.unit,
-        price: allitem.price,
-        count: count[0]
-      });
-      flag1 = 1;
-    }
-    if (flag2 == 0 && allitem.barcode == 'ITEM000003') {
-      outputs.push({
-        barcode: allitem.barcode,
-        name: allitem.name,
-        unit: allitem.unit,
-        price: allitem.price,
-        count: count[1]
-      });
-      flag2 = 1;
-    }
-    if (flag3 == 0 && allitem.barcode == 'ITEM000005') {
-      outputs.push({
-        barcode: allitem.barcode,
-        name: allitem.name,
-        unit: allitem.unit,
-        price: allitem.price,
-        count: count[2]
-      });
-      flag3 = 1;
-    }
-
-  })
-
-  return outputs;
-
-
-}
-function buildItems(outputs) {
-  var items = [];
-  var promotion = [];
-  promotion = loadPromotions();
-  var subtotal;
-  var subtatal1;
-  outputs.forEach(function (output) {
-    if (output.barcode == 'ITEM000001') {
-      if ((output.count) % 2 == 0)
-        subtotal = ((output.count / 2) * output.price);
-      else
-        subtotal = ((parseInt(output.count / 2) + 2) * output.price);
-    }
-    else if (output.barcode == 'ITEM000005') {
-      subtotal = ((parseInt(output.count / 2) + 1) * output.price);
-
-    }
-    else subtotal = (output.count * output.price);
-    subtotal1 = (output.count * output.price);
-    items.push({item: output, subtotal: subtotal, subtotal1: subtotal1});
-  });
-
-  return items;
-}
-
-function buildCartItems(items) {
+function buildCartItems(inputs) {
   var cartItems = [];
-  var total = 0;
-  var total1 = 0;
+  var flag = 0;
+  var allItems = loadAllItems();
+  var promotions = loadPromotions();
 
-  items.forEach(function (item) {
-    total += item.subtotal;
-    total1 += item.subtotal1;
+  allItems.forEach(function (allItem) {
+    inputs.forEach(function (input) {
+      cartItems.forEach(function (cartItem) {
+        if (cartItem.cartItems.barcode == allItem.barcode)
+          flag = 1;
+      });
+      var s = input.split('-');
+
+      if (s[0] == allItem.barcode && flag == 0)
+        cartItems.push({cartItems: allItem, count: 0, discountsubtotal: 0, subtotal: 0});
+      else
+        flag = 0;
+    });
   });
-  cartItems = {cartitem: items, total: total, total1: total1};
+  countSameNumber(cartItems, inputs);
 
   return cartItems;
 }
-function buildReceipt(cartItems) {
-  return ('***<没钱赚商店>收据***\n' + build(cartItems) + '----------------------\n' +
-  '总计：' + ((cartItems.total).toFixed(2)) + '(元)\n' + '节省：' + ((cartItems.total1 - cartItems.total).toFixed(2)) + '(元)\n' + '**********************');
+
+function countSameNumber(cartItems, inputs) {
+  var promotions = loadPromotions();
+
+  cartItems.forEach(function (cartItem) {
+    inputs.forEach(function (input) {
+      var s = input.split('-');
+      if (s[0] == cartItem.cartItems.barcode && input.length == 10) {
+        cartItem.count++;
+      }
+      if (input.length != 10 && cartItem.cartItems.barcode == s[0]) {
+        cartItem.count = s[1];
+
+      }
+    });
+    cartItem.discountsubtotal = (cartItem.count * cartItem.cartItems.price);
+    cartItem.subtotal = (cartItem.count * cartItem.cartItems.price);
+
+    promotions.forEach(function (promotion) {
+      if (promotion.type == 'BUY_TWO_GET_ONE_FREE') {
+        var barcodes = promotion.barcodes;
+        barcodes.forEach(function (barcode) {
+          if (cartItem.cartItems.barcode == barcode)
+            cartItem.discountsubtotal = (cartItem.count - 1) * cartItem.cartItems.price;
+        });
+      }
+    });
+  });
+
 }
 
-function build(cartItems) {
-  var text = '';
-  var citems = cartItems.cartitem;
+function buildItems(cartItems) {
+  var Items = [];
+  var discounttotal = 0;
+  var total = 0;
 
-  citems.forEach(function (citem) {
-    text += ('名称：' + citem.item.name + '，' + '数量：' + citem.item.count + citem.item.unit + '，' + '单价：' + (citem.item.price).toFixed(2)
-    + '(元)' + '，' + '小计：' + (citem.subtotal).toFixed(2) + '(元)\n');
+  cartItems.forEach(function (cartItem) {
+    discounttotal += cartItem.discountsubtotal;
+    total += cartItem.subtotal;
+  });
+  Items = {items: cartItems, discounttotal: discounttotal, total: total};
+
+  return Items;
+}
+
+function buildReceipt(cartItems) {
+  return ('***<没钱赚商店>收据***\n' + build(cartItems) + '----------------------\n' +
+  '总计：' + ((cartItems.discounttotal).toFixed(2)) + '(元)\n' + '节省：' + ((cartItems.total - cartItems.discounttotal).toFixed(2)) +
+  '(元)\n' + '**********************');
+}
+
+
+function build(Items) {
+  var text = '';
+  (Items.items).forEach(function (citem) {
+    text += ('名称：' + citem.cartItems.name + '，' + '数量：' + citem.count + citem.cartItems.unit + '，' + '单价：' +
+    (citem.cartItems.price).toFixed(2)
+    + '(元)' + '，' + '小计：' + (citem.discountsubtotal).toFixed(2) + '(元)\n');
   });
 
   return text;
 }
+
+
 
 
 
